@@ -1,7 +1,0 @@
-[submodule "tsfpga"]
-	path = deps/tsfpga
-	url = https://github.com/tsfpga/tsfpga.git
-[submodule "vunit"]
-	path = deps/vunit
-	url = https://github.com/ru551n/vunit.git
-	branch = master

@@ -1,0 +1,2 @@
+vunit-hdl @ git+https://github.com/ru551n/vunit@master
+tsfpga
