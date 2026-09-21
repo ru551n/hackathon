@@ -1,0 +1,3 @@
+[submodule "hdl-modules"]
+	path = hdl-modules
+	url = https://github.com/hdl-modules/hdl-modules.git
