@@ -1,0 +1,7 @@
+[submodule "tsfpga"]
+	path = tsfpga
+	url = https://github.com/tsfpga/tsfpga.git
+[submodule "vunit"]
+	path = vunit
+	url = https://github.com/ru551n/vunit.git
+	branch = master
