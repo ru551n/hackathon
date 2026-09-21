@@ -1,2 +1,2 @@
 vunit-hdl @ git+https://github.com/ru551n/vunit@master
-tsfpga @ git+https://github.com/ru551n/tsfpga@main
+tsfpga @ git+https://github.com/tsfpga/tsfpga@main
