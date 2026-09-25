@@ -32,6 +32,11 @@ def main():
     if args.list:
         return 0
 
+    if not projects.create_unless_exists(
+        projects_path=args.projects_path, num_parallel_builds=args.num_parallel_builds
+    ):
+        return 1
+
     return 0 if projects.build(
         projects_path=args.projects_path,
         num_parallel_builds=args.num_parallel_builds,

@@ -57,7 +57,7 @@ def get_olo_module():
 
 
 def get_all_modules():
-    """Modules from all submodules, plus Open Logic."""
-    modules = get_modules(modules_folders=submodule_module_folders())
+    """Our own modules, those from all submodules, plus Open Logic."""
+    modules = get_modules(modules_folders=[REPO_ROOT / "modules", *submodule_module_folders()])
     modules.append(get_olo_module())
     return modules
