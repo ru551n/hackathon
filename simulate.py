@@ -16,6 +16,7 @@ def main():
 
     modules = get_all_modules()
     simulation_project = SimulationProject(args=args)
+    simulation_project.vunit_proj.add_package("vunit-python-bridge", allow_setup=True)
 
     # Generate before modules are added to VUnit, to avoid duplicate files.
     create_vhdl_ls_configuration(
