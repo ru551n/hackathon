@@ -1,3 +1,4 @@
 vunit-hdl @ git+https://github.com/ru551n/vunit@feature/waves
 tsfpga @ git+https://github.com/tsfpga/tsfpga@main
 vunit-python-bridge @ git+https://github.com/VUnit/vunit-python-bridge@main
+speja>=0.14.5

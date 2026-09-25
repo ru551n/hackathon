@@ -50,6 +50,19 @@ python build.py --netlist-builds --list   # hdl-modules' netlist (resource check
 Output lands in `build/<project>/`: `kv260.bit` and `kv260.xsa`.
 A build of the current top level takes about 2.5 minutes.
 
+## Lint and format
+
+[speja](https://github.com/ru551n/speja) (installed by `requirements.txt`) with the house style in
+`speja.yaml`: tsfpga/hdl-modules conventions, and no end statement repeats a name or label.
+
+```sh
+speja <files> --fix -c speja.yaml                            # format
+speja --recursive modules --check style,lint -c speja.yaml   # check everything
+```
+
+Put files and `--recursive` before `-c`: `-c` takes several values. To exempt a deliberate
+exception, wrap it in `-- vsg_off <rule>` / `-- vsg_on <rule>` with a comment saying why.
+
 ## Layout
 
 ```

@@ -26,11 +26,14 @@ architecture a of kv260_top is
 
 begin
 
+  -- The block design only exists inside Vivado, so there is no entity to instantiate.
+  -- vsg_off instantiation_034
   block_design_inst : component block_design
     port map (
       pl_clk0 => clk,
       pl_resetn0 => resetn
     );
+  -- vsg_on instantiation_034
 
   reset_gen_inst : entity olo.olo_base_reset_gen
     generic map (
