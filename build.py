@@ -1,30 +1,12 @@
 """Collect modules from all git submodules and build their FPGA projects."""
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
 from tsfpga.build_project_list import BuildProjectList, get_build_projects
-from tsfpga.module import get_modules
 
-REPO_ROOT = Path(__file__).parent.resolve()
-
-
-def submodule_module_folders():
-    """Every submodule's `modules` folder, for those that have one."""
-    paths = subprocess.check_output(
-        ["git", "submodule", "--quiet", "foreach", "echo $sm_path"],
-        cwd=REPO_ROOT,
-        text=True,
-    ).split()
-    folders = []
-    for path in paths:
-        # Submodules ship helper packages (e.g. hdl_modules) that their module_*.py files import.
-        sys.path.insert(0, str(REPO_ROOT / path))
-        if (folder := REPO_ROOT / path / "modules").exists():
-            folders.append(folder)
-    return folders
+from common import REPO_ROOT, get_all_modules
 
 
 def main():
@@ -37,7 +19,7 @@ def main():
     parser.add_argument("--num-threads-per-build", type=int, default=4)
     args = parser.parse_args()
 
-    modules = get_modules(modules_folders=submodule_module_folders())
+    modules = get_all_modules()
     projects = BuildProjectList(
         projects=get_build_projects(
             modules=modules,

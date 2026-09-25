@@ -1,3 +1,6 @@
 [submodule "hdl-modules"]
 	path = hdl-modules
 	url = https://github.com/hdl-modules/hdl-modules.git
+[submodule "open-logic"]
+	path = open-logic
+	url = https://github.com/open-logic/open-logic.git

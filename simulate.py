@@ -7,15 +7,14 @@ from tsfpga.examples.simulation_utils import (
     create_vhdl_ls_configuration,
     get_arguments_cli,
 )
-from tsfpga.module import get_modules
 
-from build import REPO_ROOT, submodule_module_folders
+from common import REPO_ROOT, get_all_modules
 
 
 def main():
     args = get_arguments_cli(default_output_path=REPO_ROOT / "simulate").parse_args()
 
-    modules = get_modules(modules_folders=submodule_module_folders())
+    modules = get_all_modules()
     simulation_project = SimulationProject(args=args)
 
     # Generate before modules are added to VUnit, to avoid duplicate files.
