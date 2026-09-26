@@ -31,6 +31,67 @@ top level costs far more time on a remote board than the testbench would have.
 7. **Commit.** Small commits per module, after the module's tests pass. `git pull --rebase`
    before pushing; never push something that does not compile in `simulate.py --compile`.
 
+## Components
+
+Shorthand for step 2. `lib.entity`: hdl-modules has one library per module, Open Logic is all
+`olo`. Read the entity's header before using it. Where both libraries have a block, either is
+fine; stay consistent inside one module.
+
+**CDC: hdl-modules only.** Every signal crossing clock domains goes through the blocks in the
+CDC rows below; tsfpga applies their scoped constraints (`resync/` and `fifo/`
+`scoped_constraints/`). Never use Open Logic's `olo_base_cc_*`, `olo_base_fifo_async` or
+`olo_intf_sync`, and never write a synchronizer by hand. Only reset synchronization uses
+`olo.olo_base_reset_gen`. Avoid `resync_rarely_valid`/`resync_rarely_valid_lutram`: their
+header names a constraint file that does not exist in hdl-modules, so they build unconstrained.
+
+| Need | Use |
+|---|---|
+| Sync FIFO | `fifo.fifo`, `olo.olo_base_fifo_sync`, `axi_stream.axi_stream_fifo` |
+| Async FIFO (CDC) | `fifo.asynchronous_fifo`, `hard_fifo.asynchronous_hard_fifo` |
+| Packet FIFO (drop/repeat) | `olo.olo_base_fifo_packet`, `common.clean_packet_dropper` |
+| Primitive FIFO (FIFO36E2) | `hard_fifo.hard_fifo`, `hard_fifo.asynchronous_hard_fifo` |
+| RAM | `olo.olo_base_ram_sp`, `olo.olo_base_ram_sdp`, `olo.olo_base_ram_tdp` |
+| CDC single bit, input pin | `resync.resync_level`, `resync.resync_level_on_signal`, `resync.resync_sticky_level` |
+| CDC pulse | `resync.resync_pulse` |
+| CDC vector | `resync.resync_slv_level`, `resync.resync_slv_level_on_signal`, `resync.resync_twophase`, `resync.resync_twophase_handshake` |
+| CDC counter | `resync.resync_counter` (Gray code) |
+| CDC AXI / AXI-Lite | `axi.axi_read_cdc`/`axi_write_cdc`, `axi_lite.axi_lite_cdc` |
+| Reset synchronizer | `olo.olo_base_reset_gen` (hdl-modules has none) |
+| Pipeline/register slice | `common.handshake_pipeline`, `olo.olo_base_pl_stage`, `olo.olo_axi_pl_stage`, `axi.axi_read_pipeline`/`axi_write_pipeline`, `axi_lite.axi_lite_pipeline` |
+| Stream split/merge/mux | `common.handshake_splitter`, `common.handshake_merger`, `common.handshake_mux`, `olo.olo_base_tdm_mux` |
+| Arbiter | `olo.olo_base_arb_rr`, `olo.olo_base_arb_prio`, `olo.olo_base_arb_wrr` |
+| Width conversion | `common.width_conversion`, `olo.olo_base_wconv_n2m`, `olo.olo_base_wconv_n2xn`, `olo.olo_base_wconv_xn2n` |
+| Stream helpers | `common.assign_last`, `common.strobe_on_last`, `common.keep_remover`, `common.axi_stream_protocol_checker`, `olo.olo_base_flowctrl_handler`, `olo.olo_base_rate_limit` |
+| Delay/latency match | `olo.olo_base_delay`, `olo.olo_base_delay_cfg`, `olo.olo_base_latency_comp` |
+| Strobe/timer/counter | `olo.olo_base_strobe_gen`, `olo.olo_base_strobe_div`, `common.periodic_pulser`, `common.clock_counter`, `olo.olo_intf_clk_meas` |
+| Debounce | `common.debounce`, `olo.olo_intf_debounce` |
+| Registers (PS to PL) | `register_file.axi_lite_register_file` (+ hdl-registers `regs_<name>.toml`), `olo.olo_axi_lite_slave`, `register_file.interrupt_register` |
+| AXI-Lite plumbing | `axi_lite.axi_to_axi_lite`, `axi_lite.axi_lite_mux`, `axi_lite.axi_lite_cdc`, `axi_lite.axi_to_axi_lite_vec` |
+| AXI plumbing | `axi.axi_read_cdc`/`axi_write_cdc`, `axi.axi_*_fifo`, `axi.axi_simple_read_crossbar`/`write_crossbar`, `axi.axi_read_throttle`/`write_throttle` |
+| AXI master to DDR | `olo.olo_axi_master_simple`, `olo.olo_axi_master_full` |
+| DMA stream to DDR | `dma_axi_write_simple.dma_axi_write_simple_axi_lite`, `ring_buffer.ring_buffer_write_simple` |
+| UART / SPI / I2C | `olo.olo_intf_uart`, `olo.olo_intf_spi_master`, `olo.olo_intf_spi_slave`, `olo.olo_intf_i2c_master` |
+| CRC | `olo.olo_base_crc`, `olo.olo_base_crc_append`, `olo.olo_base_crc_check` |
+| PRBS/LFSR | `olo.olo_base_prbs`, `lfsr.lfsr_fibonacci_single`, `lfsr.lfsr_fibonacci_multi` |
+| Misc logic | `olo.olo_base_cam`, `olo.olo_base_dyn_sft` (barrel shift), `olo.olo_base_decode_firstbit`, `olo.olo_base_sample_hold`, `common.event_aggregator` |
+| Integer math | `math.unsigned_divider`, `math.saturate_signed`, `math.truncate_round_signed`, `math.math_pkg` |
+| Fixed-point arithmetic | `olo.olo_fix_add`/`sub`/`addsub`/`mult`/`madd`/`bin_div`/`abs`/`neg`/`compare`/`limit` |
+| Fixed-point format | `olo.olo_fix_resize`, `olo.olo_fix_round`, `olo.olo_fix_saturate`, `olo.olo_fix_from_real`/`to_real` (constants, no pipeline); types and functions in `olo.olo_fix_pkg` (`en_cl_fix`, same rounding as its Python model) |
+| DSP | `olo.olo_fix_mov_avg`, `olo.olo_fix_cic_dec_tdm`, `olo.olo_fix_fir_dec_ser_chpar`, `olo.olo_fix_cordic_rot`/`cordic_vect`, `olo.olo_fix_cplx_mult`/`cplx_addsub`, `olo.olo_fix_mix_r2c`/`mix_c2r` |
+| Sine/cosine | `sine_generator.sine_generator`, `sine_generator.sine_lookup` |
+| Utility packages | `common.types_pkg`, `common.common_pkg`, `common.addr_pkg`, `olo.olo_base_pkg_math`, `olo.olo_base_pkg_logic`, `olo.olo_base_pkg_array`, `axi.axi_pkg`, `axi_lite.axi_lite_pkg`, `axi_stream.axi_stream_pkg` |
+
+Testbench only (never in `src/`):
+
+- hdl-modules `bfm` library (`library bfm;`): `axi_stream_master`/`axi_stream_slave`,
+  `axi_lite_master`, `axi_master`/`axi_slave` (with a memory model), `handshake_master`/
+  `handshake_slave` (random stalls), `*_bfm_pkg` helpers.
+- VUnit verification components (`library vunit_lib;`): AXI-Stream, AXI-Lite master, memory.
+- `olo.olo_fix_sim_stimuli`, `olo.olo_fix_sim_checker`: apply fixed-point stimuli from a file
+  and check DUT outputs against a file, e.g. written by the `en_cl_fix` Python model.
+
+Ours: `kv260.kv260_top` (KV260 top level: PS clock/reset, PMOD blink).
+
 ## Debugging a failing test
 
 - Rerun only the failing test: `python simulate.py "<lib>.<tb>.<test>" -v`.
@@ -44,7 +105,16 @@ top level costs far more time on a remote board than the testbench would have.
 
 - Our code goes in `modules/<name>/` (tsfpga layout). Never edit `hdl-modules/` or
   `open-logic/`; they are pinned submodules.
-- Set `VUNIT_SIMULATOR=ghdl` (or `nvc`) explicitly; otherwise VUnit may pick Questa.
+- Set `VUNIT_SIMULATOR` explicitly; otherwise VUnit may pick Questa. Simulator split (details
+  in README "Which simulator"):
+  - only VHDL: `ghdl` or `nvc`;
+  - Verilog/SystemVerilog design files under a VHDL testbench: `nvc`, unless the code uses
+    `interface`, `'0` or `unique`/`priority case`, then `modelsim` (Questa);
+  - never write testbenches in SystemVerilog: VUnit's SV runner does not work in NVC.
+  Questa needs `SALT_LICENSE_SERVER` set and `--vivado-skip`; a test failing in 0.1 s with an
+  empty log means the license variable is missing.
+- Instantiate Verilog/SystemVerilog modules from VHDL through a component declaration
+  (`dut : component name`), never `entity work.name`: NVC rejects that for Verilog.
 - Keep a single testbench run under 5 minutes: shrink the scenario, not the checks.
 - Run one Vivado build at a time.
 - The board is remote with no physical access: make state observable through registers

@@ -20,8 +20,8 @@ Tools:
 
 - Vivado 2025.2 on `PATH` (`source <install>/Vivado/2025.2/settings64.sh`), with the Zynq
   UltraScale+ device family installed.
-- A simulator: GHDL, NVC or Questa. VUnit picks the first one it finds, so set it explicitly:
-  `export VUNIT_SIMULATOR=ghdl`.
+- A simulator: GHDL, NVC or Questa (see [Which simulator](#which-simulator)). VUnit picks the
+  first one it finds, so set it explicitly: `export VUNIT_SIMULATOR=ghdl` (or `nvc`, `modelsim`).
 
 ## Simulate
 
@@ -38,6 +38,33 @@ The first run compiles the Vivado simulation libraries (unisim) with Vivado, whi
 The result is cached in `simulate/`.
 
 hdl-modules is compiled but its own testbenches are not run.
+
+### Which simulator
+
+| Design contains | Simulator |
+|---|---|
+| Only VHDL | GHDL or NVC |
+| Verilog/SystemVerilog, VHDL testbench | NVC, if the code stays inside its subset; otherwise Questa |
+| `interface`, `'0`, `unique`/`priority case`, or a SystemVerilog testbench | Questa |
+
+- GHDL does not simulate Verilog or SystemVerilog at all.
+- NVC takes Verilog/SystemVerilog through VUnit only because our VUnit branch
+  (`ru551n/vunit@feature/waves`) carries upstream PR #1203. VUnit's own SystemVerilog test
+  runner does not parse in NVC, so testbenches stay VHDL.
+- Instantiate a Verilog/SystemVerilog module from VHDL with a component declaration
+  (`dut : component name`). NVC rejects `entity work.name` for a Verilog module.
+
+Questa (Altera Starter Edition, `~/altera_pro/26.1/questa_fse`):
+
+```sh
+export SALT_LICENSE_SERVER=<path to your license .dat>   # vsim 2025.3 reads this variable
+VUNIT_SIMULATOR=modelsim python simulate.py --vivado-skip
+```
+
+Without `SALT_LICENSE_SERVER` every test fails in a fraction of a second with an empty log.
+`--vivado-skip` is required: Vivado's `compile_simlib` refuses this Questa edition, so unisim is
+not available and `hard_fifo` is left out. Check the Starter Edition's license terms before using
+it for an AMD design.
 
 ## Build
 
