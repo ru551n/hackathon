@@ -66,6 +66,8 @@ Without `SALT_LICENSE_SERVER` every test fails in a fraction of a second with an
 not available and `hard_fifo` is left out. Check the Starter Edition's license terms before using
 it for an AMD design.
 
+Vivado xsim is not supported: VUnit does not run on it (see VUnit/vunit#1225 for why).
+
 ## Build
 
 ```sh
